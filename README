@@ -2,7 +2,7 @@
 
 ======================================
 
-A HTOP-like Implementation using /proc filesystem
+A HTOP-like Implementation using /proc filesystem - Linux Specific
 
 ======================================
 
