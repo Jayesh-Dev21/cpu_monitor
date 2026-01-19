@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-#watch -n1 -d head -n 13 /proc/stat
+# refer to man pages for "/proc/stat", to know about the attributes and naming convention
 
 read_proc() {
   echo "Read"
