@@ -1,5 +1,6 @@
-# Small CPU Monitor | In Bash
+Small CPU Monitor | In Bash
 
+![](./sample/bash_cpu_M.png)
 ======================================
 
 A HTOP-like Implementation using /proc filesystem - Linux Specific
