@@ -1,14 +1,22 @@
 #!/usr/bin/env bash
 
-------------------------------------------------------------------------------------------------
+#------------------------------------------------------------------------------------------------
 # refer to man pages for "/proc/stat", to know about the attributes and naming convention
 #/proc/stat
 #              kernel/system statistics.  Varies with architecture.  Common
 #              entries
-------------------------------------------------------------------------------------------------
+#------------------------------------------------------------------------------------------------
 
 read_proc() {
-  echo "Read"
+  local key user nice system idle iowait
+  local irq softirq steal guest guest_nice
+  while read -r key user nice system idle iowait \
+    irq softirq steal guest guest_nice; do
+    if [[ $key != cpu* ]]; then
+      break
+    fi
+    echo "$key - user:$user"
+  done </proc/stat
 }
 
 read_proc
