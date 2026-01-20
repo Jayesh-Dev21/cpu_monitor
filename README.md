@@ -1,4 +1,4 @@
-Small CPU Monitor | In Bash
+A Small CPU Monitor | In Bash
 
 ![](./sample/bash_cpu_M.png)
 ======================================
