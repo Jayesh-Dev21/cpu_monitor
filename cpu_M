@@ -23,6 +23,7 @@ read_proc() {
 
     busy_time=$((user + nice + system + irq + softirq + steal + guest + guest_nice))
     idle_time=$((idle + iowait))
+    val_pair="$busy_time $idle_time"
     echo -e "$key - user:$user - \n|-Busy Time: $busy_time\n|-Idle Time:$idle_time\n"
   done </proc/stat
 }
