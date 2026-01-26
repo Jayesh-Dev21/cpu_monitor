@@ -1,0 +1,15 @@
+#fun_copyData
+
+#--------------------------------------------------------
+# copies data from one object{hashmaps} to another
+#--------------------------------------------------------
+copy_data() {
+  local -n arr_old=$1
+  local -n arr_new=$2
+
+  local key value
+  for key in "${!arr_old[@]}"; do
+    value=${arr_old[$key]}
+    arr_new[$key]=$value
+  done
+}

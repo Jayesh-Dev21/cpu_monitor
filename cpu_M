@@ -1,31 +1,104 @@
 #!/usr/bin/env bash
 
 #------------------------------------------------------------------------------------------------
+# CPU Monitor - Visualize CPU usage per-core on Linux
+#
+# Created: January 26, 2026
+# License: MIT
+#
+# Description:
+# Real-time visualization of CPU usage for all cores
+# Uses /proc/stat for cpu statistics
+# Displays color-coded bars for each cpu core
+#
 # refer to man pages for "/proc/stat", to know about the attributes and naming convention
-#/proc/stat
-#              kernel/system statistics.  Varies with architecture.  Common
-#              entries
 #------------------------------------------------------------------------------------------------
 
-read_proc() {
+source ./dependencies/fun_copyData
+source ./dependencies/fun_readProc
+source ./dependencies/fun_printBar
+source ./dependencies/fun_visualize
+source ./dependencies/fun_getAllCpus
+source ./dependencies/fun_updateWindowSize
 
-  #------------------------------------------------------------------------------------------------
-  local busy_time idle_time val_pair
-  #------------------------------------------------------------------------------------------------
-  local key user nice system idle iowait
-  local irq softirq steal guest guest_nice
-  while read -r key user nice system idle iowait \
-    irq softirq steal guest guest_nice; do
+#------------------------------------------------------------------------------------------------
+# global variables
+#------------------------------------------------------------------------------------------------
+declare -A current_map=()
+declare -A old_map=()
+declare -a ALL_CPUS=()
 
-    if [[ $key != cpu* ]]; then
-      break
-    fi
+BAR_CHAR='|'
+EMPTY_CHAR=' '
+BAR_LENGTH=30
 
-    busy_time=$((user + nice + system + irq + softirq + steal + guest + guest_nice))
-    idle_time=$((idle + iowait))
-    val_pair="$busy_time $idle_time"
-    echo -e "$key - user:$user - \n|-Busy Time: $busy_time\n|-Idle Time:$idle_time\n"
-  done </proc/stat
+#------------------------------------------------------------------------------------------------
+# color configuration
+#------------------------------------------------------------------------------------------------
+if [[ -z $NO_COLOR ]]; then
+  COLOR1=$'\e[31m'  # red for bars
+  COLOR2=$'\e[35m'  # magenta for cpu labels
+  COLOR3=$'\e[36m'  # cyan for percentages
+  DIM=$'\e[2m'      # dim for timestamps
+  RST=$'\e[0m'      # reset
+else
+  COLOR1=
+  COLOR2=
+  COLOR3=
+  DIM=
+  RST=
+fi
+
+#------------------------------------------------------------------------------------------------
+# cleanup function - restore terminal state on exit
+#------------------------------------------------------------------------------------------------
+cleanup() {
+  printf '\e[?1049l'  # disable alternate buffer
+  printf '\e[?25h'    # show the cursor
 }
 
-read_proc
+#------------------------------------------------------------------------------------------------
+# main function - orchestrates the cpu monitoring loop
+#------------------------------------------------------------------------------------------------
+main() {
+  shopt -s checkwinsize
+
+  #------------------------------------------------------------------------------------------------
+  # initialization
+  #------------------------------------------------------------------------------------------------
+  get_all_cpus
+  read_proc current_map
+  echo 'waiting for data...'
+  sleep 1
+
+  #------------------------------------------------------------------------------------------------
+  # terminal setup
+  #------------------------------------------------------------------------------------------------
+  trap cleanup EXIT
+  trap update_window_size WINCH
+
+  printf '\e[?1049h'  # enable alternate buffer
+  printf '\e[?25l'    # hide the cursor
+  printf '\e[H'       # move the cursor home
+
+  update_window_size
+
+  #------------------------------------------------------------------------------------------------
+  # monitoring loop
+  #------------------------------------------------------------------------------------------------
+  local display_output
+  while true; do
+    copy_data current_map old_map
+    read_proc current_map
+
+    display_output=$( visualize_data old_map current_map "$BAR_LENGTH" )
+
+    printf '\e[2J'  # clear the screen
+    printf '\e[H'   # move the cursor home
+    echo -n "$display_output"
+
+    sleep 1
+  done
+}
+
+main "$@"

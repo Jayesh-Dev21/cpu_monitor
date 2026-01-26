@@ -1,0 +1,12 @@
+#fun_getAllCpus
+
+#--------------------------------------------------------
+# discovers all cpu cores in the system
+# populates the ALL_CPUS array
+#--------------------------------------------------------
+
+get_all_cpus() {
+  ALL_CPUS=(/sys/devices/system/cpu/cpu[0-9]*)
+  ALL_CPUS=("${ALL_CPUS[@]##*/}")
+}
+

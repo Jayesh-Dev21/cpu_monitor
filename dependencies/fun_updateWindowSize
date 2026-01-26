@@ -1,0 +1,21 @@
+#fun_updateWindowSize
+
+#--------------------------------------------------------
+# calculates appropriate bar length based on terminal width
+# adjusts dynamically when window is resized
+#--------------------------------------------------------
+update_window_size() {
+  if [[ -n $COLUMNS ]]; then
+    local cpus=( "${ALL_CPUS[@]}" )
+    local highest_cpu=${cpus[-1]}
+
+    # [] + " cpu" + num + " " + percentage
+    local buffer_space=$((2 + 4 + ${#highest_cpu} + 8))
+    BAR_LENGTH=$((COLUMNS - buffer_space))
+    
+    # ensure minimum bar length
+    if [[ $BAR_LENGTH -lt 10 ]]; then
+      BAR_LENGTH=10
+    fi
+  fi
+}

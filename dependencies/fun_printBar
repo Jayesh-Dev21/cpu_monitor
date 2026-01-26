@@ -1,0 +1,63 @@
+#fun_printBar
+
+#--------------------------------------------------------
+# prints a visual bar representing cpu usage
+# calculates usage percentage from old and current data
+#--------------------------------------------------------
+print_bar() {
+  local cpu_key=$1
+  local -n prev_ref=$2
+  local -n curr_ref=$3
+  local bar_len=$4
+
+  local busy1 idle1 busy2 idle2
+  read -r busy1 idle1 <<< "${prev_ref[$cpu_key]}"
+  read -r busy2 idle2 <<< "${curr_ref[$cpu_key]}"
+
+  #--------------------------------------------------------
+  # check for offline cpu
+  #--------------------------------------------------------
+  local usage online
+  if [[ -z $busy1 || -z $busy2 ]]; then
+    usage=0
+    online=
+  else
+    local busy=$((busy2 - busy1))
+    local idle=$((idle2 - idle1))
+    local total=$((busy + idle))
+
+    usage=$((1000 * busy / total))
+    online=1
+  fi
+
+  local int=$((usage / 10))
+  local frac=$((usage % 10))
+  local perc=$int.$frac
+
+  local num_bars=$((usage * bar_len / 1000))
+
+  #--------------------------------------------------------
+  # build the visual bar
+  #--------------------------------------------------------
+  local i
+  local bar_str='['
+  for ((i = 0; i < num_bars; i++)); do
+    bar_str+="${COLOR1}${BAR_CHAR}${RST}"
+  done
+  for ((i = num_bars; i < bar_len; i++)); do
+    bar_str+="${EMPTY_CHAR}"
+  done
+  bar_str+=']'
+
+  #--------------------------------------------------------
+  # display cpu state
+  #--------------------------------------------------------
+  local state
+  if [[ -n $online ]]; then
+    state="${COLOR3}${perc}%${RST}"
+  else
+    state="${DIM}offline${RST}"
+  fi
+
+  echo "$bar_str ${COLOR2}${cpu_key}${RST} $state"
+}

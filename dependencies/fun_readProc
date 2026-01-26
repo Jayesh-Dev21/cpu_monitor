@@ -1,0 +1,31 @@
+#fun_readProc
+
+#--------------------------------------------------------
+# reads /proc/stat and populates the cpu data map
+# with busy_time and idle_time for each cpu core
+#--------------------------------------------------------
+read_proc() {
+  local -n data_map=$1
+
+  #--------------------------------------------------------
+  local busy_time idle_time val_pair
+  #--------------------------------------------------------
+  local key user nice system idle iowait
+  local irq softirq steal guest guest_nice
+  
+  while read -r key user nice system idle iowait \
+    irq softirq steal guest guest_nice; do
+
+    if [[ $key != cpu* ]]; then
+      continue
+    elif [[ $key == 'cpu' ]]; then
+      continue
+    fi
+
+    busy_time=$((user + nice + system + irq + softirq + steal + guest + guest_nice))
+    idle_time=$((idle + iowait))
+    val_pair="$busy_time $idle_time"
+    
+    data_map[$key]=$val_pair
+  done </proc/stat
+}
